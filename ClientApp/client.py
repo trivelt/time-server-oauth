@@ -20,9 +20,8 @@ class ClientWebApplication(web.Application):
         token = await self.auth_proxy.retrieve_token(scope)
         if not token:
             return web.json_response({"error": "authorization error"}, status=500)
-        time_data = await TimeServerProxy.get_time(scope, token)
-        return web.json_response(time_data, status=200)
-        #TODO: Error check
+        status_code, time_data = await TimeServerProxy.get_time(scope, token)
+        return web.json_response(time_data, status=status_code)
 
 
 if __name__ == '__main__':

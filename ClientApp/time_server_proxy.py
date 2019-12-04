@@ -6,6 +6,10 @@ class TimeServerProxy:
 
     @staticmethod
     async def get_time(endpoint, token):
-        url = f"{TimeServerProxy.TIME_SERVER_URL}/{endpoint}"
-        response = await requests_async.get(url, headers={"Authorization": f"Bearer {token}"})
-        return response.json()
+        try:
+            url = f"{TimeServerProxy.TIME_SERVER_URL}/{endpoint}"
+            response = await requests_async.get(url, headers={"Authorization": f"Bearer {token}"})
+        except requests_async.exceptions.ConnectionError as e:
+            print("Error: " + str(e))
+            return 500, {"error": str(e)}
+        return 200, response.json()

@@ -14,10 +14,14 @@ class AuthorizationProxy:
         self.token_values = dict()
 
     async def retrieve_token(self, scope):
-        received_token_event = self._create_token_event(scope)
-        await self.send_authorization_code_request(scope)
-        await received_token_event.wait()
-        token = self.token_values[scope].pop()
+        try:
+            received_token_event = self._create_token_event(scope)
+            await self.send_authorization_code_request(scope)
+            await received_token_event.wait()
+            token = self.token_values[scope].pop()
+        except requests_async.exceptions.ConnectionError as e:
+            print("Error: " + str(e))
+            return None
         return token
 
     def _create_token_event(self, scope):
