@@ -5,6 +5,7 @@ import string
 import jwt
 from time import time
 from auth_codes_database import AuthCodesDatabase
+from utils import random_string
 
 
 class AuthServiceApplication(web.Application):
@@ -14,7 +15,7 @@ class AuthServiceApplication(web.Application):
     def __init__(self):
         web.Application.__init__(self)
         self.configure_routes()
-        self.jwt_secret = self._random_string(length=16)
+        self.jwt_secret = random_string(length=16)
         self.codes_database = AuthCodesDatabase()
 
     def configure_routes(self):
@@ -54,13 +55,10 @@ class AuthServiceApplication(web.Application):
         # Validate only id
         # Validate secret
 
-    def generate_auth_code(self, scope):
-        auth_code = self._random_string(length=AuthServiceApplication.AUTH_TOKEN_LENGTH)
-        self.codes_database.add(auth_code, scope)
+    def generate_auth_code(self, scope, client_id):
+        auth_code = random_string(length=AuthServiceApplication.AUTH_TOKEN_LENGTH)
+        self.codes_database.add(auth_code, scope, client_id)
         return auth_code
-
-    def _random_string(self, length):
-        return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
     def generate_token(self, scope):
         jwt_payload = {
