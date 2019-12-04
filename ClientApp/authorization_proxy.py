@@ -29,7 +29,7 @@ class AuthorizationProxy:
         if key not in dict_object:
             dict_object[key] = [value]
         else:
-            self.token_values[key].insert(0, value)
+            dict_object[key].insert(0, value)
 
     async def send_authorization_code_request(self, scope):
         json_dict = {
@@ -50,13 +50,30 @@ class AuthorizationProxy:
         return await requests_async.get(AuthorizationProxy.GET_TOKEN_ENDPOINT, params=json_dict)
 
     async def handle_auth_callback(self, request):
-        request_data = await request.json()
-        scope = request_data['scope']
-        code = request_data['code']
-        response = await self.send_token_request(code)
-        response_data = response.json()
-        token = response_data['token']
+        scope = request.query.get('scope', None)
+        code = request.query.get('code', None)
+        if scope is None or code is None:
+            print("Error: Received invalid auth callback request: " + str(request.query))
+            self._set_invalid_token(scope)
+        else:
+            try:
+                response = await self.send_token_request(code)
+                response.raise_for_status()
+                response_data = response.json()
+                token = response_data['access_token']
+                self._push_into_dict(self.token_values, scope, token)
+            except ValueError as exc:
+                print("Error: Could not receive valid token message: " + str(exc))
+                self._set_invalid_token(scope)
+            except KeyError as exc:
+                print("Error: Invalid token message with missing parameter: " + str(exc))
+                self._set_invalid_token(scope)
+            except requests_async.exceptions.HTTPError as exc:
+                print("Error: Received error message from auth service: " + str(exc))
+                self._set_invalid_token(scope)
 
-        self._push_into_dict(self.token_values, scope, token)
         self.token_events[scope].pop().set()
         return web.json_response({}, status=200)
+
+    def _set_invalid_token(self, scope):
+        self._push_into_dict(self.token_values, scope, None)

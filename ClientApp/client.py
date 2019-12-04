@@ -18,6 +18,8 @@ class ClientWebApplication(web.Application):
     async def handle_time_request(self, request):
         scope = request.path[1:]
         token = await self.auth_proxy.retrieve_token(scope)
+        if not token:
+            return web.json_response({"error": "authorization error"}, status=500)
         time_data = await TimeServerProxy.get_time(scope, token)
         return web.json_response(time_data, status=200)
         #TODO: Error check
