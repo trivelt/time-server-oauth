@@ -41,8 +41,12 @@ class AuthServiceApplication(web.Application):
         })
         data = response.json()
         if 'valid' in data and data['valid'] == True:
-            return True
+            return self.verify_scope(request, data)
         return False
+
+    def verify_scope(self, request, data):
+        print("PATH: " + str(request.path))
+        return 'scope' in data and data['scope'] == request.path[1:]
 
     def prepare_response(self, value):
         return web.json_response({"time": value}, status=200)

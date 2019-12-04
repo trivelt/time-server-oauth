@@ -10,6 +10,7 @@ from utils import random_string
 class AuthServiceApplication(web.Application):
     TOKEN_EXPIRATION_TIME_SEC = 5
     AUTH_TOKEN_LENGTH = 32
+    ALLOWED_SCOPE = ("current_time", "epoch_time")
 
     def __init__(self):
         web.Application.__init__(self)
@@ -24,17 +25,24 @@ class AuthServiceApplication(web.Application):
         self.router.add_route('GET', '/validate_token', self.validate_token)
 
     async def authorize(self, request):
+        error = ""
         callback_url = request.query['redirect_uri']
         client_id = request.query.get('client_id', None)
         if not client_id or not self.clients_database.client_exists(client_id):
-            await requests_async.get(callback_url, json={"error": "invalid request"})
+            error = "invalid request"
 
         scope = request.query['scope']
+        if not self.verify_scope(scope):
+            error = "invalid request"
+
         response_params = {
             "code": self.generate_auth_code(scope, client_id),
             "scope": scope
         }
-        await requests_async.get(callback_url, params=response_params)
+        if error:
+            await requests_async.get(callback_url, json={"error": error})
+        else:
+            await requests_async.get(callback_url, params=response_params)
         return web.json_response({}, status=200)
 
     async def get_token(self, request):
@@ -91,6 +99,9 @@ class AuthServiceApplication(web.Application):
             scope = None
         return web.json_response({"valid": validation_result,
                                   "scope": scope}, status=200)
+
+    def verify_scope(self, scope):
+        return scope in AuthServiceApplication.ALLOWED_SCOPE
 
 
 if __name__ == '__main__':
