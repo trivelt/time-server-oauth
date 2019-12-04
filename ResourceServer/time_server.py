@@ -1,6 +1,5 @@
 from aiohttp import web
 import requests_async
-import asyncio
 from datetime import datetime
 from time import time
 
