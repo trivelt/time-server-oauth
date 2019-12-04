@@ -72,7 +72,8 @@ class AuthorizationProxy:
                 print("Error: Received error message from auth service: " + str(exc))
                 self._set_invalid_token(scope)
 
-        self.token_events[scope].pop().set()
+        if scope:
+            self.token_events[scope].pop().set()
         return web.json_response({}, status=200)
 
     def _set_invalid_token(self, scope):
