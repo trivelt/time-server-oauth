@@ -1,0 +1,35 @@
+version: '2.3'
+services:
+
+  client-app:
+    build: ./ClientApp
+    image: client-app:1.0
+    ports:
+      - '9000:9000'
+    depends_on:
+      auth-service:
+        condition: service_started
+      resource-server:
+        condition: service_started
+    volumes:
+      - ./ClientApp:/opt/app
+    network_mode: host
+
+
+  auth-service:
+    build: ./AuthService
+    image: auth-service:1.0
+    ports:
+      - '9001:9001'
+    volumes:
+      - ./AuthService:/opt/app
+    network_mode: host
+
+  resource-server:
+    build: ./ResourceServer
+    image: resource-server:1.0
+    ports:
+      - '9002:9002'
+    volumes:
+      - ./ResourceServer:/opt/app
+    network_mode: host
