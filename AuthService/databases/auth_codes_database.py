@@ -8,18 +8,22 @@ class AuthCodesDatabase:
     def __init__(self):
         self.codes = dict()
 
-    def add(self, auth_code, scope):
-        self.codes[auth_code] = (time(), scope)
+    def add(self, auth_code, scope, client_id):
+        self.codes[auth_code] = (time(), scope, client_id)
 
     def is_valid(self, auth_code):
         if auth_code not in self.codes:
             return False
-        creation_time, _ = self.codes[auth_code]
+        creation_time, _, _ = self.codes[auth_code]
         return time() < creation_time + AuthCodesDatabase.AUTH_CODE_EXPIRATION_TIME_SEC
 
     def get_scope(self, auth_code):
-        _, scope = self.codes[auth_code]
+        _, scope, _ = self.codes[auth_code]
         return scope
+
+    def get_client_id(self, auth_code):
+        _, _, client_id = self.codes[auth_code]
+        return client_id
 
     def remove(self, auth_code):
         del self.codes[auth_code]

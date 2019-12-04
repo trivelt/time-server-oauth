@@ -25,9 +25,10 @@ class AuthServiceApplication(web.Application):
     async def authorize(self, request):
         self.validate_client(request)
         callback_url = request.query['redirect_uri']
+        client_id = request.query.get('client_id', None)
         scope = request.query['scope']
         response_params = {
-            "code": self.generate_auth_code(scope),
+            "code": self.generate_auth_code(scope, client_id),
             "scope": scope
         }
         await requests_async.get(callback_url, params=response_params)
