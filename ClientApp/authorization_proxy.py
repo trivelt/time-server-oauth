@@ -32,11 +32,21 @@ class AuthorizationProxy:
             self.token_values[key].insert(0, value)
 
     async def send_authorization_code_request(self, scope):
-        json_dict = {"scope": scope, "callback": AppConfig.AUTH_CALLBACK_URL}
+        json_dict = {
+            "response_type": "code",
+            "client_id": AppConfig.CLIENT_ID,
+            "scope": scope,
+            "redirect_uri": AppConfig.AUTH_CALLBACK_URL
+        }
         return await requests_async.get(AuthorizationProxy.AUTHORIZE_ENDPOINT, params=json_dict)
 
     async def send_token_request(self, authorization_code):
-        json_dict = {"code": authorization_code, "callback": AppConfig.AUTH_CALLBACK_URL}
+        json_dict = {
+            "grant_type": "authorization_code",
+            "code": authorization_code,
+            "client_secret": AppConfig.CLIENT_SECRET,
+            "redirect_uri": AppConfig.AUTH_CALLBACK_URL
+        }
         return await requests_async.get(AuthorizationProxy.GET_TOKEN_ENDPOINT, params=json_dict)
 
     async def handle_auth_callback(self, request):

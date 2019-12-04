@@ -14,7 +14,7 @@ class AuthServiceApplication(web.Application):
         self.router.add_route('GET', '/validate_token', self.validate_token)
 
     async def authorize(self, request):
-        callback_url = request.query['callback']
+        callback_url = request.query['redirect_uri']
         scope = request.query['scope']
         await requests_async.get(callback_url, json={"code": "SOMECODE", "scope": scope})
         return web.json_response({}, status=200)
@@ -25,8 +25,8 @@ class AuthServiceApplication(web.Application):
     async def validate_token(self, request):
         return web.json_response({}, status=200)
 
+
 if __name__ == '__main__':
     port = 9001
     app = AuthServiceApplication()
     web.run_app(app, port=port)
-
