@@ -17,7 +17,9 @@ class AuthorizationProxy:
         try:
             received_token_event = self._create_token_event(scope)
             await self.send_authorization_code_request(scope)
-            await received_token_event.wait()
+            await self.wait_for(received_token_event, 2)
+            if scope not in self.token_values:
+                return None
             token = self.token_values[scope].pop()
         except requests_async.exceptions.ConnectionError as e:
             print("Error: " + str(e))
@@ -82,3 +84,10 @@ class AuthorizationProxy:
 
     def _set_invalid_token(self, scope):
         self._push_into_dict(self.token_values, scope, None)
+
+    async def wait_for(self, evt, timeout):
+        try:
+            await asyncio.wait_for(evt.wait(), timeout)
+        except asyncio.TimeoutError:
+            pass
+        return evt.is_set()
