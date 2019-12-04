@@ -71,7 +71,22 @@ class AuthServiceApplication(web.Application):
         return jwt.encode(jwt_payload, self.jwt_secret, algorithm='HS256').decode("utf-8")
 
     async def validate_token(self, request):
-        return web.json_response({}, status=200)
+        encoded_token = request.query.get('access_token', None)
+        audience = request.query.get('audience', None)
+        if not (audience and encoded_token):
+            print("Error: Could not validate token: missing parameter")
+            return web.json_response({"error": "missing parameter"}, status=400)
+
+        try:
+            decoded_token = jwt.decode(encoded_token, self.jwt_secret, audience=audience, algorithms=['HS256'])
+            validation_result = decoded_token["exp"] > time()
+            scope = decoded_token["sub"]
+        except Exception as exc:
+            print("Error: " + str(exc))
+            validation_result = False
+            scope = None
+        return web.json_response({"valid": validation_result,
+                                  "scope": scope}, status=200)
 
 
 if __name__ == '__main__':
