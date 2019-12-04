@@ -1,8 +1,6 @@
 from aiohttp import web
 import requests_async
-from datetime import datetime
-from time import time
-
+from time_provider import TimeProvider
 
 class AuthServiceApplication(web.Application):
     VALIDATE_TOKEN_URL = "http://127.0.0.1:9001/validate_token"
@@ -16,17 +14,17 @@ class AuthServiceApplication(web.Application):
         self.router.add_route('GET', '/epoch_time', self.epoch_time)
 
     async def current_time(self, request):
-        verified = await self.verify_token(request)
-        if not verified:
-            return web.json_response({"error": "Token authorization failed"}, status=401)
-        return self.prepare_response(str(datetime.now()))
+        return await self.send_time_response(request, TimeProvider.current_time)
 
     async def epoch_time(self, request):
+        return await self.send_time_response(request, TimeProvider.epoch_time)
+
+    async def send_time_response(self, request, time_function):
         await self.verify_token(request)
         verified = await self.verify_token(request)
         if not verified:
             return web.json_response({"error": "Token authorization failed"}, status=401)
-        return self.prepare_response(int(time()))
+        return web.json_response({"time": time_function()}, status=200)
 
     async def verify_token(self, request):
         authorization_header = request.headers.get('Authorization', None)
@@ -44,11 +42,7 @@ class AuthServiceApplication(web.Application):
         return False
 
     def verify_scope(self, request, data):
-        print("PATH: " + str(request.path))
         return 'scope' in data and data['scope'] == request.path[1:]
-
-    def prepare_response(self, value):
-        return web.json_response({"time": value}, status=200)
 
 
 if __name__ == '__main__':
