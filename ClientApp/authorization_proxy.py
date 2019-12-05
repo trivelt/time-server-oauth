@@ -25,7 +25,7 @@ class AuthorizationProxy:
                 return None
             token = self.token_values[scope].pop()
         except requests_async.exceptions.ConnectionError as e:
-            print("Error: " + str(e))
+            print("Error: cannot connect to the auth server" + str(e))
             return None
         return token
 
