@@ -1,6 +1,8 @@
 import requests_async
 import asyncio
 from aiohttp import web
+
+from async_utils import wait_for
 from config import AppConfig
 
 
@@ -8,6 +10,7 @@ class AuthorizationProxy:
     AUTH_SERVER_URL = "http://127.0.0.1:9001"
     AUTHORIZE_ENDPOINT = AUTH_SERVER_URL + "/authorize"
     GET_TOKEN_ENDPOINT = AUTH_SERVER_URL + "/get_token"
+    RECEIVE_TOKEN_TIMEOUT_SEC = 5
 
     def __init__(self):
         self.token_events = dict()
@@ -17,7 +20,7 @@ class AuthorizationProxy:
         try:
             received_token_event = self._create_token_event(scope)
             await self.send_authorization_code_request(scope)
-            await self.wait_for(received_token_event, 2)
+            await wait_for(received_token_event, AuthorizationProxy.RECEIVE_TOKEN_TIMEOUT_SEC)
             if scope not in self.token_values:
                 return None
             token = self.token_values[scope].pop()
@@ -84,10 +87,3 @@ class AuthorizationProxy:
 
     def _set_invalid_token(self, scope):
         self._push_into_dict(self.token_values, scope, None)
-
-    async def wait_for(self, evt, timeout):
-        try:
-            await asyncio.wait_for(evt.wait(), timeout)
-        except asyncio.TimeoutError:
-            pass
-        return evt.is_set()
