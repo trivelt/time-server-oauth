@@ -1,9 +1,11 @@
 from aiohttp import web
 import requests_async
 from time_provider import TimeProvider
+import ssl
+
 
 class AuthServiceApplication(web.Application):
-    VALIDATE_TOKEN_URL = "http://127.0.0.1:9001/validate_token"
+    VALIDATE_TOKEN_URL = "https://127.0.0.1:9001/validate_token"
 
     def __init__(self):
         web.Application.__init__(self)
@@ -35,7 +37,7 @@ class AuthServiceApplication(web.Application):
         response = await requests_async.get(AuthServiceApplication.VALIDATE_TOKEN_URL, params={
             "access_token": token,
             "audience": "TimeServer"
-        })
+        }, verify=False)
         data = response.json()
         if 'valid' in data and data['valid'] == True:
             return self.verify_scope(request, data)
@@ -48,4 +50,6 @@ class AuthServiceApplication(web.Application):
 if __name__ == '__main__':
     port = 9002
     app = AuthServiceApplication()
-    web.run_app(app, port=port)
+    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    ssl_context.load_cert_chain('certs/domain_srv.crt', 'certs/domain_srv.key')
+    web.run_app(app, port=port, ssl_context=ssl_context)

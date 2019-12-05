@@ -32,7 +32,7 @@ class TestClientApi(TestCase):
 
 class TestResourceServerApi(TestCase):
     def send_get(self, endpoint):
-        return requests.get("http://127.0.0.1:9002" + endpoint)
+        return requests.get("https://127.0.0.1:9002" + endpoint, verify=False)
 
     def test_timeEndpoints_shouldReturnUnauthorizedError_WhenValidTokenIsNotProvided(self):
         for resource in RESOURCES:

@@ -7,7 +7,7 @@ from config import AppConfig
 
 
 class AuthorizationProxy:
-    AUTH_SERVER_URL = "http://127.0.0.1:9001"
+    AUTH_SERVER_URL = "https://127.0.0.1:9001"
     AUTHORIZE_ENDPOINT = AUTH_SERVER_URL + "/authorize"
     GET_TOKEN_ENDPOINT = AUTH_SERVER_URL + "/get_token"
     RECEIVE_TOKEN_TIMEOUT_SEC = 5
@@ -47,7 +47,7 @@ class AuthorizationProxy:
             "scope": scope,
             "redirect_uri": AppConfig.AUTH_CALLBACK_URL
         }
-        return await requests_async.get(AuthorizationProxy.AUTHORIZE_ENDPOINT, params=json_dict)
+        return await requests_async.get(AuthorizationProxy.AUTHORIZE_ENDPOINT, params=json_dict, verify=False)
 
     async def send_token_request(self, authorization_code):
         json_dict = {
@@ -56,7 +56,7 @@ class AuthorizationProxy:
             "client_secret": AppConfig.CLIENT_SECRET,
             "redirect_uri": AppConfig.AUTH_CALLBACK_URL
         }
-        return await requests_async.get(AuthorizationProxy.GET_TOKEN_ENDPOINT, params=json_dict)
+        return await requests_async.get(AuthorizationProxy.GET_TOKEN_ENDPOINT, params=json_dict, verify=False)
 
     async def handle_auth_callback(self, request):
         scope = request.query.get('scope', None)

@@ -2,6 +2,8 @@ from aiohttp import web
 import requests_async
 import jwt
 from time import time
+import ssl
+
 from databases.auth_codes_database import AuthCodesDatabase
 from databases.clients_database import ClientsDatabase
 from utils import random_string
@@ -94,7 +96,7 @@ class AuthServiceApplication(web.Application):
             validation_result = decoded_token["exp"] > time()
             scope = decoded_token["sub"]
         except Exception as exc:
-            print("Error: " + str(exc))
+            print("Error: unexpected exception" + str(exc))
             validation_result = False
             scope = None
         return web.json_response({"valid": validation_result,
@@ -107,4 +109,6 @@ class AuthServiceApplication(web.Application):
 if __name__ == '__main__':
     port = 9001
     app = AuthServiceApplication()
-    web.run_app(app, port=port)
+    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    ssl_context.load_cert_chain('certs/domain_srv.crt', 'certs/domain_srv.key')
+    web.run_app(app, port=port, ssl_context=ssl_context)
