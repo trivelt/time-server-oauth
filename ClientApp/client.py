@@ -1,8 +1,9 @@
+import logging
 from aiohttp import web
+
 from authorization_proxy import AuthorizationProxy
 from time_server_proxy import TimeServerProxy
 from config import AppConfig
-import logging
 
 
 class ClientWebApplication(web.Application):

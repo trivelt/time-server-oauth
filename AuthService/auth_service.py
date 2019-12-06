@@ -1,9 +1,9 @@
-from aiohttp import web
-import requests_async
 import jwt
-from time import time
 import ssl
 import logging
+import requests_async
+from time import time
+from aiohttp import web
 
 from databases.auth_codes_database import AuthCodesDatabase
 from databases.clients_database import ClientsDatabase

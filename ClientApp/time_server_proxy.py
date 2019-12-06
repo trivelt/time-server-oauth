@@ -1,5 +1,5 @@
-import requests_async
 import logging
+import requests_async
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
-import requests_async
 import asyncio
 import logging
+import requests_async
 from aiohttp import web
 
 from async_utils import wait_for

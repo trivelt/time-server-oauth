@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String
 from databases.tables import Base
+from sqlalchemy import Column, Integer, String
 
 
 class AuthorizedClient(Base):

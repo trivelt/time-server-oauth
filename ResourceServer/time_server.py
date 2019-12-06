@@ -1,7 +1,8 @@
-from aiohttp import web
-import requests_async
-from time_provider import TimeProvider
 import ssl
+import requests_async
+from aiohttp import web
+
+from time_provider import TimeProvider
 
 
 class AuthServiceApplication(web.Application):

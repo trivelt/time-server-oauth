@@ -1,10 +1,11 @@
-from os.path import dirname, abspath, sep, exists
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import databases
+from os.path import dirname, abspath, sep, exists
+
 from databases.tables.authorized_client import AuthorizedClient
 from databases.tables import Base
 from hashlib import md5
+import databases
 
 
 class ClientsDatabase:
