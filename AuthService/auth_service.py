@@ -3,10 +3,13 @@ import requests_async
 import jwt
 from time import time
 import ssl
+import logging
 
 from databases.auth_codes_database import AuthCodesDatabase
 from databases.clients_database import ClientsDatabase
 from utils import random_string
+
+logger = logging.getLogger(__name__)
 
 
 class AuthServiceApplication(web.Application):
@@ -88,15 +91,15 @@ class AuthServiceApplication(web.Application):
         encoded_token = request.query.get('access_token', None)
         audience = request.query.get('audience', None)
         if not (audience and encoded_token):
-            print("Error: Could not validate token: missing parameter")
+            logger.error("Could not validate token: missing parameter")
             return web.json_response({"error": "missing parameter"}, status=400)
 
         try:
             decoded_token = jwt.decode(encoded_token, self.jwt_secret, audience=audience, algorithms=['HS256'])
             validation_result = decoded_token["exp"] > time()
             scope = decoded_token["sub"]
-        except Exception as exc:
-            print("Error: unexpected exception" + str(exc))
+        except Exception:
+            logger.exception("Unexpected exception")
             validation_result = False
             scope = None
         return web.json_response({"valid": validation_result,
@@ -107,6 +110,7 @@ class AuthServiceApplication(web.Application):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format="%(asctime)s {%(filename)s:%(lineno)d} %(levelname)-8s %(message)s")
     port = 9001
     app = AuthServiceApplication()
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)

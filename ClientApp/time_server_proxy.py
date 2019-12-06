@@ -1,4 +1,7 @@
 import requests_async
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TimeServerProxy:
@@ -10,6 +13,6 @@ class TimeServerProxy:
             url = f"{TimeServerProxy.TIME_SERVER_URL}/{endpoint}"
             response = await requests_async.get(url, headers={"Authorization": f"Bearer {token}"}, verify=False)
         except requests_async.exceptions.ConnectionError as e:
-            print("Error: cannot connect to the time server" + str(e))
+            logger.exception("Cannot connect to the time server")
             return 500, {"error": str(e)}
         return 200, response.json()

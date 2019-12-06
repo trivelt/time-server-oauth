@@ -1,9 +1,12 @@
 import requests_async
 import asyncio
+import logging
 from aiohttp import web
 
 from async_utils import wait_for
 from config import AppConfig
+
+logger = logging.getLogger(__name__)
 
 
 class AuthorizationProxy:
@@ -24,8 +27,8 @@ class AuthorizationProxy:
             if scope not in self.token_values:
                 return None
             token = self.token_values[scope].pop()
-        except requests_async.exceptions.ConnectionError as e:
-            print("Error: cannot connect to the auth server" + str(e))
+        except requests_async.exceptions.ConnectionError:
+            logger.exception("Cannot connect to the auth server")
             return None
         return token
 
@@ -62,7 +65,7 @@ class AuthorizationProxy:
         scope = request.query.get('scope', None)
         code = request.query.get('code', None)
         if scope is None or code is None:
-            print("Error: Received invalid auth callback request: " + str(request.query))
+            logger.error("Received invalid auth callback request: %s", request.query)
             self._set_invalid_token(scope)
         else:
             try:
@@ -71,14 +74,14 @@ class AuthorizationProxy:
                 response_data = response.json()
                 token = response_data['access_token']
                 self._push_into_dict(self.token_values, scope, token)
-            except ValueError as exc:
-                print("Error: Could not receive valid token message: " + str(exc))
+            except ValueError:
+                logger.exception("Could not receive valid token message")
                 self._set_invalid_token(scope)
-            except KeyError as exc:
-                print("Error: Invalid token message with missing parameter: " + str(exc))
+            except KeyError:
+                logger.exception("Invalid token message with missing parameter")
                 self._set_invalid_token(scope)
-            except requests_async.exceptions.HTTPError as exc:
-                print("Error: Received error message from auth service: " + str(exc))
+            except requests_async.exceptions.HTTPError:
+                logger.exception("Received error message from auth service")
                 self._set_invalid_token(scope)
 
         if scope:

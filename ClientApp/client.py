@@ -2,6 +2,7 @@ from aiohttp import web
 from authorization_proxy import AuthorizationProxy
 from time_server_proxy import TimeServerProxy
 from config import AppConfig
+import logging
 
 
 class ClientWebApplication(web.Application):
@@ -25,5 +26,6 @@ class ClientWebApplication(web.Application):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format="%(asctime)s {%(filename)s:%(lineno)d} %(levelname)-8s %(message)s")
     app = ClientWebApplication()
     web.run_app(app, port=AppConfig.PORT)
