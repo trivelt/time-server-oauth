@@ -5,7 +5,7 @@ from aiohttp import web
 from time_provider import TimeProvider
 
 
-class AuthServiceApplication(web.Application):
+class TimeServer(web.Application):
     VALIDATE_TOKEN_URL = "https://127.0.0.1:9001/validate_token"
 
     def __init__(self):
@@ -35,7 +35,7 @@ class AuthServiceApplication(web.Application):
             return False
 
         token = authorization_header[len("Bearer "):]
-        response = await requests_async.get(AuthServiceApplication.VALIDATE_TOKEN_URL, params={
+        response = await requests_async.get(TimeServer.VALIDATE_TOKEN_URL, params={
             "access_token": token,
             "audience": "TimeServer"
         }, verify=False)
@@ -50,7 +50,7 @@ class AuthServiceApplication(web.Application):
 
 if __name__ == '__main__':
     port = 9002
-    app = AuthServiceApplication()
+    app = TimeServer()
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     ssl_context.load_cert_chain('certs/domain_srv.crt', 'certs/domain_srv.key')
     web.run_app(app, port=port, ssl_context=ssl_context)
